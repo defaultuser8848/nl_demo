@@ -6,7 +6,7 @@ from eth_account.messages import encode_defunct
 from web3.exceptions import TransactionNotFound
 app=Flask(__name__)
 app.secret_key = base64.urlsafe_b64encode(os.urandom(128)).decode()
-BURN_ADDRESS="0x8a5aae041b46a98fac1508b24a298d08dd6e07b1"
+BURN_ADDRESS="0x8a5aae041b46a98fac1508b24a298d08dd6e07b1" #不是什么销毁地址，这是我的钱包（）
 
 def get_web3_proxy():
     web3=getattr(g,"_web3",None)
@@ -55,7 +55,7 @@ def withdraw():
     w3=get_web3_proxy()
     for i in range(12):
         try:
-            data=w3.eth.get_transaction_receipt(txid)
+            data=w3.eth.get_transaction(txid)
         except TransactionNotFound:
             time.sleep(10)
         else:break
@@ -64,9 +64,11 @@ def withdraw():
     if data["from"].lower()!=session["address"]:
         return make_response("txId invaild.",400)
     contract=get_contract()
-    args=contract.events.Transfer().process_receipt(data)[0]["args"]
-    print(args)
-    amount=args["value"]
+    _,data=contract.decode_function_input(data["input"])
+    amount=data.get("value",-1)/(10**int(contract.functions.decimals.call()))
+    if data["to"].lower()!=BURN_ADDRESS.lower():
+        return make_response("The transaction cannot be verified.",500)
+    
     # TODO:余额转入论坛
     # _mint_NL(username,amount)
     return "%d NL has been withdrawn to %s"%(amount,username)
