@@ -47,7 +47,7 @@
                     params: [address, challenge]
                 });
             } catch (error) {
-                res.textContent="Verify failed."
+                res.textContent="Verification failed"
                 console.log(error);
                 return ;
             }
@@ -60,7 +60,7 @@
             });
             if (!resp.ok) { res.textContent = await resp.text(); return; };
 
-            res.textContent = `Transaction pending`;
+            res.textContent = `Transaction pending,do not close this page before completion.`;
             const web3 = new Web3(window.ethereum);
             const chainId = await web3.eth.getChainId();
             const contractAddress = '0x0909fa6D16Aaf7fea0A9A357d505E632381EFb6b';
